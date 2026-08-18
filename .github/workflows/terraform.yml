@@ -34,4 +34,4 @@ jobs:
       - name: Terraform Plan
   working-directory: ./Envoirment/Preprod
   run: terraform plan -var-file="terraform.tfvars"
-        git add .github/workflows/terraform.yml
+        
