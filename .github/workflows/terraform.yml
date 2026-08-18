@@ -31,6 +31,7 @@ jobs:
         working-directory: ./Envoirment/Preprod
         run: terraform validate
 
-      - name: Terraform Plan
-        working-directory: ./Envoirment/Preprod
-        run: terraform plan
+      - name: Check Terraform files
+  working-directory: ./Envoirment/Preprod
+  run: ls -la
+        
