@@ -1,6 +1,9 @@
 name: Terraform CI
 
 on:
+  push:
+    branches:
+      - feature/pipeline
   pull_request:
     branches:
       - main
@@ -29,5 +32,5 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-  working-directory: ./Envoirment/Preprod
-  run: terraform plan
+        working-directory: ./Envoirment/Preprod
+        run: terraform plan
