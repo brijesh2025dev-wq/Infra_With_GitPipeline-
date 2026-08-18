@@ -1,48 +1,104 @@
-name: Terraform CI
+name: Terraform
 
 on:
   push:
     branches:
-      - feature/pipeline
+      - "**"
 
   pull_request:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
-  terraform:
+  terraform-plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: Envoirment/Preprod
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Azure Login
-        uses: Azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          az login \
+            --service-principal \
+            --username "${{ secrets.AZURE_CLIENT_ID }}" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"
+
+      - name: Set Azure Subscription
+        run: |
+          az account set \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+
+      - name: Check Azure Login
+        run: az account show
 
       - name: Terraform Format
-        working-directory: ./Envoirment/Preprod
         run: terraform fmt -check
 
       - name: Terraform Init
-        working-directory: ./Envoirment/Preprod
         run: terraform init
 
       - name: Terraform Validate
-        working-directory: ./Envoirment/Preprod
         run: terraform validate
 
-      - name: Check Preprod files
-        working-directory: ./Envoirment/Preprod
+      - name: Terraform Plan
+        run: terraform plan -var-file="terraform.tfvars"
+
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+
+    needs: terraform-plan
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    defaults:
+      run:
+        working-directory: Envoirment/Preprod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
         run: |
-          pwd
-          ls -la
+          az login \
+            --service-principal \
+            --username "${{ secrets.AZURE_CLIENT_ID }}" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"
+
+      - name: Set Azure Subscription
+        run: |
+          az account set \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+
+      - name: Check Azure Login
+        run: az account show
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
 
       - name: Terraform Plan
-        working-directory: ./Envoirment/Preprod
-        run: terraform plan -var-file="terraform.tfvars"
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
