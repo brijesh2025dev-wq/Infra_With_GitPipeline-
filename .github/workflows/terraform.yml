@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/pipeline
+
   pull_request:
     branches:
       - main
@@ -31,7 +32,12 @@ jobs:
         working-directory: ./Envoirment/Preprod
         run: terraform validate
 
+      - name: Check Preprod files
+        working-directory: ./Envoirment/Preprod
+        run: |
+          pwd
+          ls -la
+
       - name: Terraform Plan
-  working-directory: ./Envoirment/Preprod
-  run: terraform plan -var-file="terraform.tfvars"
-        
+        working-directory: ./Envoirment/Preprod
+        run: terraform plan -var-file="terraform.tfvars"
