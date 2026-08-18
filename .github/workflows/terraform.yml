@@ -29,5 +29,5 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        working-directory: ./Envoirment/Preprod
-        run: terraform plangit diff
+  working-directory: ./Envoirment/Preprod
+  run: terraform plan
