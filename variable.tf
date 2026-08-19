@@ -1,0 +1,6 @@
+variable "brieshstoarge" {
+
+}
+variable "RGbrijesh" {
+
+}
